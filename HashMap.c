@@ -14,12 +14,13 @@ void insert(HashMap *p_map, char *p_word) {
     p_listOnPos = p_map->list[key];
     p_tmp = p_listOnPos;
 
-    while(p_tmp){
-        printf("           Slovo %s , pocet %d, size slova %zu \n",p_tmp->p_word,p_tmp->count,p_tmp->wordSize);
-        if(!strncmp(p_word,p_tmp->p_word,p_tmp->wordSize)){
+    while(p_tmp != NULL){
+       // printf("           Slovo %s , pocet %d, size slova %zu \n",p_tmp->p_word,p_tmp->count,p_tmp->wordSize);
+        if(!strncmp(p_word,p_tmp->p_word,(p_tmp->wordSize-1))){
             p_tmp->count++;
             return;
         }
+        p_tmp=p_tmp->p_next;
     }
     p_newNode = (Node *)malloc(sizeof(Node));
     if(p_newNode == NULL){
@@ -35,6 +36,7 @@ void insert(HashMap *p_map, char *p_word) {
     p_newNode->wordSize = sizeof(char) * (strlen(p_word)+1);
     strncpy(p_newNode->p_word,p_word,p_newNode->wordSize);
     p_newNode->p_next = p_listOnPos;
+    p_map->list[key] = p_newNode;
     printf("Pridani prvku probehlo v poradku\n");
 }
 
@@ -74,11 +76,9 @@ void showMap(HashMap *p_map) {
     for(i =0; i<p_map->size;i++) {
         printf("Line %d: \n", i);
         p_tmp = p_map->list[i];
-        printf("%s\n",p_tmp->p_word);
         while (p_tmp) {
-            printf("Vstup");
             if(p_tmp->p_word != NULL) {
-                printf("           Slovo %s , pocet %d, size slova %zu \n",p_tmp->p_word,p_tmp->count,p_tmp->wordSize);
+                printf("           Slovo %s , pocet %d, size slova %d \n",p_tmp->p_word,p_tmp->count,p_tmp->wordSize);
             }
             p_tmp = (Node *) p_tmp->p_next;
         }

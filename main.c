@@ -10,7 +10,9 @@ int main() {
     insert(p_map,"mys");
     insert(p_map,"pes");
     insert(p_map,"pe");
+    insert(p_map,"přespřílišžluťoučkýkůňúpěldábelskéódy");
     showMap(p_map);
+    freeMap(p_map);
 
     return 0;
 }
