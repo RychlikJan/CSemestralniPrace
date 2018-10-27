@@ -30,21 +30,20 @@ struct hashMap{
     int size;
     struct node **list; // *list = pole ukazatelu plne ukazatelu na Node
 };
-typedef struct node Node;
-typedef struct hashMap HashMap;
+
 /**
  * Vytvori HashMap
  * @param size velikost mapy
  * @return pointer na zacatek mapy
  */
-HashMap *createHashMap(int size);
+struct hashMap *createHashMap(int size);
 
 /**
  * Vlozi prvek do mapy
  * @param map ukazatel na mapu
  * @param word
  */
-void insert(HashMap *p_map, char *p_word);
+void insert(struct hashMap *p_map, char *p_word);
 
 /**
  * Vrati hodnotu hashovaci funkce
@@ -59,11 +58,11 @@ int hashFunction(int mapSize, char *p_word);
  * @param map velikost mapy
  * @return 0/1 uspech/neuspech
  */
-void freeMap(HashMap *p_map);
+void freeMap(struct hashMap *p_map);
 
 /**
  * Pomocna fce k zobrazeni mapy
  * @param map hashMap
  */
-void showMap(HashMap *p_map);
+void showMap(struct hashMap *p_map);
 #endif //STEMMERSEMESTRALNIPRACE_HASHMAP_H

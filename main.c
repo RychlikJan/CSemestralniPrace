@@ -4,7 +4,7 @@
 
 int main() {
     printf("Hello, World!\n");
-    HashMap *p_map = createHashMap(10);
+    struct hashMap *p_map = createHashMap(10);
     insert(p_map,"pes");
     insert(p_map,"kocka");
     insert(p_map,"mys");
