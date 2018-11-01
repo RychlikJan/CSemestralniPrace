@@ -32,19 +32,23 @@ struct hashMap{
 };
 typedef struct node Node;
 typedef struct hashMap HashMap;
+
+
+
+/**
+ * Vlozi prvek do mapy
+ * @param map ukazatel na mapu
+ * @param word
+ * @return 0 pokud funkce dobehne do konce, jinak -1
+ */
+int insert(HashMap *p_map, char *p_word);
+
 /**
  * Vytvori HashMap
  * @param size velikost mapy
  * @return pointer na zacatek mapy
  */
 HashMap *createHashMap(int size);
-
-/**
- * Vlozi prvek do mapy
- * @param map ukazatel na mapu
- * @param word
- */
-void insert(HashMap *p_map, char *p_word);
 
 /**
  * Vrati hodnotu hashovaci funkce
