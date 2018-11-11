@@ -17,7 +17,7 @@
  * Uzel spojoveho seznamu
  */
 struct node{
-    char *p_word;
+    unsigned char *p_word;
     size_t wordSize;
     int count;
     struct node *p_next;
@@ -41,7 +41,7 @@ typedef struct hashMap HashMap;
  * @param word
  * @return 0 pokud funkce dobehne do konce, jinak -1
  */
-int insert(HashMap *p_map, char *p_word);
+int insert(HashMap *p_map,unsigned char *p_word);
 
 /**
  * Vytvori HashMap
@@ -56,7 +56,7 @@ HashMap *createHashMap(int size);
  * @param word slovo k hash
  * @return index v mape
  */
-int hashFunction(int mapSize, char *p_word);
+int hashFunction(int mapSize,unsigned char *p_word);
 
 /**
  * Uvolni pamet mapy

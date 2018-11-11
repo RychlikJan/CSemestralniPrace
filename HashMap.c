@@ -6,25 +6,37 @@
 #include <malloc.h>
 #include "HashMap.h"
 
-int insert(HashMap *p_map, char *p_word) {
-    printf("insert string: %s  ,", p_word);
+void wordByChar(unsigned char *word){
+    printf(" start\n");
+    unsigned char c;
+    int i = 0;
+    while(word[i] != '\0'){
+        c = word[i];
+        printf("char %d + ", c);
+        i++;
+    }
+    printf(" konec\n");
+    //printf("\n %s \n", word);
+
+}
+
+int insert(HashMap *p_map,unsigned char *p_word) {
     int key;
+    size_t newWord;
     Node *p_listOnPos,*p_newNode, *p_tmp;
 
     key = hashFunction(p_map->size,p_word);
+    newWord = sizeof(char) * (strlen((char *)p_word)+1);
     p_listOnPos = p_map->list[key];
     p_tmp = p_listOnPos;
-    printf("Pred strcpy  + %p ", p_tmp);
+    wordByChar(p_word);
     while(p_tmp != NULL){
-       // printf("           Slovo %s , pocet %d, size slova %zu \n",p_tmp->p_word,p_tmp->count,p_tmp->wordSize);
-        if(!strncmp(p_word,p_tmp->p_word,(p_tmp->wordSize-1))){
-
+        if(!memcmp(p_word,p_tmp->p_word,(max(newWord,p_tmp->wordSize)-1))){
             p_tmp->count++;
             return 0;
             // slovo uz tam existuje
         }
         p_tmp=p_tmp->p_next;
-
     }
 
     p_newNode = (Node *)malloc(sizeof(Node));
@@ -34,17 +46,16 @@ int insert(HashMap *p_map, char *p_word) {
         return -1;
     }
     p_newNode->count = 1;
-    p_newNode->p_word =(char *) malloc(strlen(p_word)+1);
+    p_newNode->p_word =(unsigned char *) malloc(strlen((char *)p_word)+1);
     if(p_newNode->p_word == NULL){
         freeMap(p_map);
         printf("Error with malloc memory for new char in node,\n");
         return -1;
     }
-    p_newNode->wordSize = sizeof(char) * (strlen(p_word)+1);
-    strncpy(p_newNode->p_word,p_word,p_newNode->wordSize);
+    p_newNode->wordSize = newWord;
+    memcpy(p_newNode->p_word,p_word,p_newNode->wordSize);
     p_newNode->p_next = p_listOnPos;
     p_map->list[key] = p_newNode;
-   //printf("Pridani prvku probehlo v poradku\n");
     return 0;
 }
 
@@ -68,20 +79,19 @@ HashMap *createHashMap(int size) {
     for(i = 0; i < size;i++){
         p_map->list[i] = NULL;
     }
-    //printf("Vytvoreni mapy probehlo v poradku\n");
     return p_map;
 }
 
-int hashFunction(int mapSize, char *p_word) {
+int hashFunction(int mapSize,unsigned char *p_word) {
     // Size 1000, max h = 999, 999*32 = 31968 + 255 = 32223; 32 223 < 32 767
     int hash, coef,i, len;
-    len = strlen(p_word);
+    len = strlen((char *)p_word);
     coef = 32;
     hash = 0;
     for(i = 0; i < len; i++){
         hash = ((coef * hash) + (int)p_word[i])%mapSize;
     }
-
+    hash = abs(hash);
     return hash;
 }
 
@@ -100,7 +110,6 @@ void showMap(HashMap *p_map) {
             p_tmp = p_tmp->p_next;
         }
     }
-
 }
 
 void freeMap(HashMap *p_map) {
