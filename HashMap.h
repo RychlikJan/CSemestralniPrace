@@ -28,6 +28,7 @@ struct node{
  */
 struct hashMap{
     int size;
+    int count;
     struct node **list; // *list = pole ukazatelu plne ukazatelu na Node
 };
 typedef struct node Node;
@@ -70,4 +71,13 @@ void freeMap(HashMap *p_map);
  * @param map hashMap
  */
 void showMap(HashMap *p_map);
+
+/*
+ * Method to sort and save map to the file
+ */
+void saveToFile(HashMap *p_map);
+
+int findStems(HashMap *p_map, HashMap *p_stems, int sizeStem);
+
+int LCS(HashMap *p_stems, unsigned char *p_word1, unsigned char *p_word2, int sizeStem);
 #endif //STEMMERSEMESTRALNIPRACE_HASHMAP_H

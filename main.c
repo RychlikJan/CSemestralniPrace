@@ -3,38 +3,67 @@
 #include "HashMap.h"
 
 #define MAP_SIZE 1000
-int readFromFile(HashMap *p_map, char *file);
-unsigned char *modifyWord(unsigned char *p_word);
+#define STEM_SIZE 3
+int readFromFile(HashMap *p_map, char *file, int stemSize);
+int modifyWord(unsigned char *p_word, int stemSize,HashMap *p_map);
 
 
-unsigned char *modifyWord(unsigned char *p_word){
+int modifyWord(unsigned char *p_word, int stemSize, HashMap *p_map){
     //printf("--------------------------\n");
    // printf("%s \n",p_word);
 
-    unsigned char c, *p_modifedWord;
-    int i, len, falutChar;
+    unsigned char c;
+    int i,j, len, falutChar,stat;
     len = strlen((char *)p_word);
     unsigned char modifedWord[len];
-
+    j=0;
     falutChar = 0;
+    stat = 0;
+   // printf("tested word = %s", p_word);
     for(i = 0;i < len;i++){
         c = p_word[i];
-        if((64 < c && c < 91)|| (96 < c && c < 123) || (c == 138) || (c == 141) || (c == 142) || (c == 154) || (c == 157) || (c == 158) || (191 < c && c < 254)) {
-           modifedWord[i-falutChar] = c;
+        // char C e {<A,Z>,<a,z>, ==Š, ==Ť,==Ž,==š,==ť,==ž, <Velke interp.><male interp>}
+        if((64 < c && c < 91)|| (96 < c && c < 123) || (c == 138) || (c == 141) || (c == 142) || (c == 154) || (c == 157) || (c == 158) || ((191 < c && c < 254)&& c != 215 && c != 247)) {
+           if ((64 < c && c < 91)|| (191 < c && c <= 223)){
+                c += 32;
+           }else if (137 < c && c < 143 ){
+                c += 16;
+           }
+            modifedWord[j] = c;
+            j++;
 
         } else{
+            if(j >= stemSize){
+               // printf("Add word = %s \n", modifedWord);
+                modifedWord[j] = '\0';
+                stat =insert(p_map,modifedWord);
+            }
+            j = 0;
             falutChar++;
+
+            if (stat != 0){
+                return -1;
+            }
         }
-        //printf("len = %d, i = %d, falutChar = %d, char = %c \n", len,i,falutChar,c);
     }
-    modifedWord[len - falutChar] = '\0';
+
+    if(j >= stemSize){
+        modifedWord[j] = '\0';
+        insert(p_map,modifedWord);
+    }
+ /*   modifedWord[len - falutChar] = '\0';
    // printf("%s \n",modifedWord);
-    p_modifedWord = &modifedWord[0];
-    printf(" v modify :%s \n",p_modifedWord);
-    return p_modifedWord;
+    if((len - falutChar) < stemSize){
+       p_word[0] = '\0';
+    } else {
+        memcpy(p_word, modifedWord, (size_t) len);
+    }*/
+    //printf(" v modify :%s \n",modifedWord);
+    return 0;
+
 }
 
-int readFromFile(HashMap *p_map, char *file){
+int readFromFile(HashMap *p_map, char *file, int stemSize){
     int insertStat;
     FILE *fp;
     fp = fopen(file, "r");
@@ -44,17 +73,22 @@ int readFromFile(HashMap *p_map, char *file){
         printf("Error with opening file\n");
         return -1;
     }
+    insertStat = 0;
     while (fscanf(fp, " %1023s", buffer) != EOF) {
        // printf("\n %s ",buffer);
-        //modifyWord(buffer);
-        printf("tady :::%s\n",modifyWord(buffer));
-        insertStat = insert(p_map,buffer);
+       //modifyWord(buffer,stemSize);
+        //printf("tady :::%s\n",modifyWord(buffer));
+        //printf("buffer pred insert: %s\n", buffer);
+        /*if(buffer[0] != '\0') {
+            insertStat = insert(p_map, buffer);
+        }*/
+        insertStat = modifyWord(buffer,stemSize,p_map);
         if(insertStat != 0){
             printf("Error with add word to file\n");
             return -1;
         }
         //printf("Pridano %s\n",buffer);
-        printf("konec cyklu \n\n\n\n\n");
+        //printf("konec cyklu \n\n\n\n\n");
     }
 
     if(fclose(fp) == EOF){
@@ -68,29 +102,42 @@ int main() {
     int status = 0;
     printf("Hello, World!\n");
 
-    HashMap *p_map = createHashMap(10);
+    HashMap *p_map = createHashMap(1000);
     if(p_map == NULL){
         printf("Problem with map create");
         return -1;
     }
-
-    status = readFromFile(p_map,"C:\\Users\\Jan\\CLionProjects\\StemmerSemestralniPrace\\test.txt");
+    //dasenka_cili_zivot_stenete
+    status = readFromFile(p_map,"C:\\Users\\Jan\\CLionProjects\\StemmerSemestralniPrace\\dasenka_cili_zivot_stenete.txt", STEM_SIZE);
     if(status != 0){
         freeMap(p_map);
         return -1;
     }
+
+    HashMap *p_stems = createHashMap(1000);
+    if(p_stems == NULL){
+        printf("Problem with map create");
+        freeMap(p_map);
+        return -1;
+    }
     // predelat to do unsigned, a pouzi metodu memcmp();
-    insert(p_map,"pes");
+   /* insert(p_map,"pes");
     insert(p_map,"kocka");
     insert(p_map,"mys");
     insert(p_map,"pes");
     insert(p_map,"pe");
     insert(p_map,"přespřílišžluťoučkýkůňúpěldábelskéódy");
     //insert(p_map,"Š");
-    insert(p_map,"PŘESPŘÍLIŠŽLUŤOUČKÝKŮŇÚPĚLĎÁELSKÉÓDY");
-
+    insert(p_map,"PŘESPŘÍLIŠŽLUŤOUČKÝKŮŇÚPĚLĎÁELSKÉÓDY");*/
     showMap(p_map);
+    findStems(p_map,p_stems,STEM_SIZE);
+
+    showMap(p_stems);
+    printf("Pred save");
+    saveToFile(p_stems);
+    printf("po save");
     freeMap(p_map);
+    freeMap(p_stems);
 
     return 0;
 }

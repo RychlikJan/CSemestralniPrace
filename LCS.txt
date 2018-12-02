@@ -1,0 +1,49 @@
+void printLCSubStr(char* X, char* Y, int m, int n, HashMap *p_stem) 
+{ 
+
+	int LCSuff[m + 1][n + 1]; 
+
+ 
+	int row, col, len; 
+    len = 0;
+
+	for (int i = 0; i <= m; i++) { 
+		for (int j = 0; j <= n; j++) { 
+			if (i == 0 || j == 0) 
+				LCSuff[i][j] = 0; 
+
+			else if (X[i - 1] == Y[j - 1]) { 
+				LCSuff[i][j] = LCSuff[i - 1][j - 1] + 1; 
+				if (len < LCSuff[i][j]) { 
+					len = LCSuff[i][j]; 
+					row = i; 
+					col = j; 
+				} 
+			} 
+			else
+				LCSuff[i][j] = 0; 
+		} 
+	} 
+
+	// if true, then no common substring exists 
+	if (len == 0) { 
+		printf("No Common Substring"); 
+		return; 
+	} 
+
+	// allocate space for the longest common substring 
+	char* resultStr = (char*)malloc((len + 1) * sizeof(char)); 
+
+	// traverse up diagonally form the (row, col) cell 
+	// until LCSuff[row][col] != 0 
+	while (LCSuff[row][col] != 0) { 
+		resultStr[--len] = X[row - 1]; // or Y[col-1] 
+
+		// move diagonally up to previous cell 
+		row--; 
+		col--; 
+	} 
+
+	// required longest common substring 
+	printf(" %s",resultStr); 
+} 
