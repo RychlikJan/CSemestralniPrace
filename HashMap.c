@@ -201,26 +201,6 @@ void saveToFile(HashMap *p_map){
 }
 int findStems(HashMap *p_map, HashMap *p_stems, int sizeStem){
     int countCompare =0;
-  /*  int i,j;
-    Node *p_tmp1, *p_tmp2;
-    for(i =0; i<p_map->size;i++) {
-        p_tmp1 = p_map->list[i];
-        while (p_tmp1) {
-
-            for(j =0; j<p_map->size;j++) {
-                p_tmp2 = p_map->list[j];
-                while (p_tmp2) {
-                    countCompare++;
-                    LCS(p_stems,p_tmp1->p_word,p_tmp2->p_word,sizeStem);
-                    p_tmp2 = p_tmp2->p_next;
-                    //printf("\nPocet porovnani je = %d",countCompare);
-                }
-            }
-           // printf("Provede se posledni prikaz?");
-            p_tmp1 = p_tmp1->p_next;
-            //printf("Ano");
-        }
-    }*/
     Node *list[p_map->count];
     int i,j;
     Node *p_tmp;
@@ -278,30 +258,15 @@ int LCS(HashMap *p_stems, unsigned char *p_word1, unsigned char *p_word2, int si
             }
         }
     }
- //   printf("\n matrix created \n");
-/*    printf("\nSlova uvnitr Slovo 1 = %s, Slovo 2 = %s \n",p_word1,p_word2);
-    for (i = 0; i <= m; i++) {
-        for (j = 0; j <= n; j++){
-            printf("%d ,",LCSuff[i][j]);
-        }
-    printf("\n");
-    }*/
-
-
-
 
     unsigned char *stem;
     int o,len;
    for(i = m; 0 <= i; i--){
     for(j = n; 0<= j; j--){
-       // printf("projizdi se to tady ? ");
      if(LCSuff[i][j] >= sizeStem){
         len = LCSuff[i][j];
-     //    printf("\n Len =  %d, kde je problem ?", len);
          stem = (unsigned char*)malloc((len + 1) * sizeof(char));
-      //   printf("\n Mozna pred memcpy");
          memcpy(stem, p_word1 + (i-len), (size_t) len);
-        // printf("\n Nebo je to insert");
          stem[len]='\0';
          insert(p_stems,stem);
          o=0;
@@ -313,6 +278,5 @@ int LCS(HashMap *p_stems, unsigned char *p_word1, unsigned char *p_word2, int si
      }
     }
    }
-  //  printf("\n----------------------------------------");
     return 0;
 }
