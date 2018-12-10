@@ -1,0 +1,8 @@
+BIN = sistem.exe
+OBJ = HashMap.obj main.obj
+
+.c.obj:
+	cl $< /c
+
+$(BIN): $(OBJ)
+	cl $(OBJ) /Fe$(BIN)

@@ -170,9 +170,10 @@ void saveToFile(HashMap *p_map){
 }
 int findStems(HashMap *p_map, HashMap *p_stems, int sizeStem){
     Node *list[p_map->count];
-    int i,j;
+    int i,j,stat;
     Node *p_tmp;
     j=0;
+    stat = 0;
 
     for(i =0; i<p_map->size;i++) {
         p_tmp = p_map->list[i];
@@ -184,9 +185,16 @@ int findStems(HashMap *p_map, HashMap *p_stems, int sizeStem){
     }
     for(i = 0; i < p_map->count;i++){
         for(j =i+1; j < p_map->count;j++){
-            LCS(p_stems,list[i]->p_word,list[j]->p_word,sizeStem);
+            stat = LCS(p_stems,list[i]->p_word,list[j]->p_word,sizeStem);
+            if(stat != 0){
+                printf("Error with alloc memory for stem\n");
+                freeMap(p_map);
+                freeMap(p_stems);
+                return -1;
+            }
         }
     }
+    return stat;
 }
 
 int LCS(HashMap *p_stems, unsigned char *p_word1, unsigned char *p_word2, int sizeStem){
@@ -222,6 +230,10 @@ int LCS(HashMap *p_stems, unsigned char *p_word1, unsigned char *p_word2, int si
      if(LCSuff[i][j] >= sizeStem){
         len = LCSuff[i][j];
          stem = (unsigned char*)malloc((len + 1) * sizeof(char));
+         if(stem == NULL){
+             printf("Error with malloc memory for stem\n");
+             return -1;
+         }
          memcpy(stem, p_word1 + (i-len), (size_t) len);
          stem[len]='\0';
          insert(p_stems,stem);
