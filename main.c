@@ -10,13 +10,15 @@ int readFromFile(HashMap *p_map, char *file, int stemSize);
 
 int modifyWord(unsigned char *p_word, int stemSize, HashMap *p_map);
 
-int findStemsFromText(int countStems);
+int findStemsFromText(int countStems,unsigned char *testedStr);
 
 int readSteams(HashMap *p_map, int countStems);
 
+int stemsFinding(HashMap *p_map,HashMap *p_mapTestedStrig);
+
 
 int modifyWord(unsigned char *p_word, int stemSize, HashMap *p_map) {
-
+    //printf("tested word = %s", p_word);
     unsigned char c;
     int i, j, len, falutChar, stat;
     len = strlen((char *) p_word);
@@ -24,7 +26,7 @@ int modifyWord(unsigned char *p_word, int stemSize, HashMap *p_map) {
     j = 0;
     falutChar = 0;
     stat = 0;
-    // printf("tested word = %s", p_word);
+
     for (i = 0; i < len; i++) {
         c = p_word[i];
         // char C e {<A,Z>,<a,z>, ==Š, ==Ť,==Ž,==š,==ť,==ž, <Velke interp.><male interp>}
@@ -54,6 +56,36 @@ int modifyWord(unsigned char *p_word, int stemSize, HashMap *p_map) {
         insert(p_map, modifedWord);
     }
     return 0;
+}
+
+int stemsFinding(HashMap *p_map,HashMap *p_mapTestedStrig){
+
+    Node *p_aktWord,*p_aktStem;
+    unsigned char finalStem[100];
+    finalStem[0] = '0';
+    finalStem[1] = '\0';
+   // printf("\n Pred cykly");
+    p_aktWord = p_mapTestedStrig->list[0];
+    while(p_aktWord != NULL){
+        size_t sizeFinalSteem =0;
+        finalStem[0] = '0';
+        finalStem[1] = '\0';
+        p_aktStem = p_map->list[0];
+        while (p_aktStem != NULL){
+           // printf("\n Ve While");
+            if(strstr((char *)p_aktWord->p_word,(char *)p_aktStem->p_word) != NULL){
+             if(p_aktStem->wordSize >= sizeFinalSteem){
+                sizeFinalSteem = p_aktStem->wordSize;
+                 memcpy(finalStem,p_aktStem->p_word,sizeFinalSteem);
+                 finalStem[sizeFinalSteem] = '\0';
+             }
+            }
+            p_aktStem = p_aktStem->p_next;
+        }
+        printf("%s -> %s\n",p_aktWord->p_word,finalStem);
+        p_aktWord = p_aktWord->p_next;
+    }
+
 }
 
 int readFromFile(HashMap *p_map, char *file, int stemSize) {
@@ -90,7 +122,6 @@ int readSteams(HashMap *p_map, int countStems) {
     unsigned char newString[2][100];
     int i, j, k;
 
-
     fp = fopen("C:\\Users\\Jan\\CLionProjects\\StemmerSemestralniPrace\\stems.dat", "r");
     if (fp == NULL)
         exit(EXIT_FAILURE);
@@ -112,39 +143,40 @@ int readSteams(HashMap *p_map, int countStems) {
                 }
             }
         }
-
         stemC = atoi(newString[1]);
         if (stemC >= countStems) {
             insert(p_map, newString[0]);
         }
-        printf("%s,:%s", newString[0], newString[1]);
     }
     fclose(fp);
     return 0;
 
 }
 
-int findStemsFromText(int countStems) {
-    HashMap *p_map = createHashMap(9973);
+int findStemsFromText(int countStems,unsigned char *testedStr) {
+    HashMap *p_map = createHashMap(1); // -> Linked list
+    HashMap *p_mapTestedStrig= createHashMap(1);
     if (p_map == NULL) {
-        printf("Problem with map create");
+        printf("Problem with map create\n");
         return -1;
     }
 
     readSteams(p_map, countStems);
-    printf("\n Printf map");
-    showMap(p_map);
-
+    modifyWord(testedStr,1,p_mapTestedStrig);
+    stemsFinding(p_map,p_mapTestedStrig);
+    freeMap(p_map);
+    freeMap(p_mapTestedStrig);
 }
 
 int main() {
-    int countStems = 0;
+    int countStems = 5;
     int status = 0;
-    printf("Hello, World!\n");
+
+    unsigned char testedStr[100] =  "Šel pes do lesa a potkal dlažební kostku sel pes do lesa a potkal dlazebni kostku";
 
     HashMap *p_map = createHashMap(9973);
     if (p_map == NULL) {
-        printf("Problem with map create");
+        printf("Problem with map create\n");
         return -1;
     }
     //dasenka_cili_zivot_stenete
@@ -158,20 +190,18 @@ int main() {
 
     HashMap *p_stems = createHashMap(1000);
     if (p_stems == NULL) {
-        printf("Problem with map create");
+        printf("Problem with map create\n");
         freeMap(p_map);
         return -1;
     }
     findStems(p_map, p_stems, STEM_SIZE);
 
     //showMap(p_stems);
-    printf("Pred save");
     saveToFile(p_stems);
-    printf("po save\n");
     freeMap(p_map);
     freeMap(p_stems);
 
-    findStemsFromText(countStems);
+    findStemsFromText(countStems, testedStr);
 
     return 0;
 }
