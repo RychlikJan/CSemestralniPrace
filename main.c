@@ -6,18 +6,19 @@
 
 #define MAP_SIZE 1000
 #define STEM_SIZE 3
+#define STEM_COUNT 10
 
 int readFromFile(HashMap *p_map, char *file, int stemSize);
 
 int modifyWord(unsigned char *p_word, int stemSize, HashMap *p_map);
 
-int findStemsFromText();
+int findStemsFromText(char *testedStr,int msl);
 
 int makeStems();
 
 int readSteams(HashMap *p_map, int countStems);
 
-int stemsFinding(HashMap *p_map,HashMap *p_mapTestedStrig);
+int stemsFinding(HashMap *p_map, HashMap *p_mapTestedStrig);
 
 
 int modifyWord(unsigned char *p_word, int stemSize, HashMap *p_map) {
@@ -58,36 +59,36 @@ int modifyWord(unsigned char *p_word, int stemSize, HashMap *p_map) {
         modifedWord[j] = '\0';
         stat = insert(p_map, modifedWord);
     }
-    if(stat !=0){
+    if (stat != 0) {
         freeMap(p_map);
         return -1;
     }
     return 0;
 }
 
-int stemsFinding(HashMap *p_map,HashMap *p_mapTestedStrig){
+int stemsFinding(HashMap *p_map, HashMap *p_mapTestedStrig) {
 
-    Node *p_aktWord,*p_aktStem;
+    Node *p_aktWord, *p_aktStem;
     unsigned char finalStem[100];
     finalStem[0] = '0';
     finalStem[1] = '\0';
     p_aktWord = p_mapTestedStrig->list[0];
-    while(p_aktWord != NULL){
-        size_t sizeFinalSteem =0;
+    while (p_aktWord != NULL) {
+        size_t sizeFinalSteem = 0;
         finalStem[0] = '0';
         finalStem[1] = '\0';
         p_aktStem = p_map->list[0];
-        while (p_aktStem != NULL){
-            if(strstr((char *)p_aktWord->p_word,(char *)p_aktStem->p_word) != NULL){
-             if(p_aktStem->wordSize >= sizeFinalSteem){
-                sizeFinalSteem = p_aktStem->wordSize;
-                 memcpy(finalStem,p_aktStem->p_word,sizeFinalSteem);
-                 finalStem[sizeFinalSteem] = '\0';
-             }
+        while (p_aktStem != NULL) {
+            if (strstr((char *) p_aktWord->p_word, (char *) p_aktStem->p_word) != NULL) {
+                if (p_aktStem->wordSize >= sizeFinalSteem) {
+                    sizeFinalSteem = p_aktStem->wordSize;
+                    memcpy(finalStem, p_aktStem->p_word, sizeFinalSteem);
+                    finalStem[sizeFinalSteem] = '\0';
+                }
             }
             p_aktStem = p_aktStem->p_next;
         }
-        printf("%s -> %s\n",p_aktWord->p_word,finalStem);
+        printf("%s -> %s\n", p_aktWord->p_word, finalStem);
         p_aktWord = p_aktWord->p_next;
     }
 
@@ -158,9 +159,9 @@ int readSteams(HashMap *p_map, int countStems) {
 
 }
 
-int findStemsFromText() {
-    int countStems = 5;
-    unsigned char testedStr[100] =  "Šel pes do lesa a potkal dlažební kostku sel pes do lesa a potkal dlazebni kostku";
+int findStemsFromText(char *testedStr,int msl) {
+    int countStems = msl;
+    //unsigned char testedStr[100] = "Šel pes do lesa a potkal dlažební kostku sel pes do lesa a potkal dlazebni kostku";
 
     HashMap *p_map = createHashMap(1); // -> Linked list
     HashMap *p_mapTestedStrig = createHashMap(1);
@@ -170,12 +171,13 @@ int findStemsFromText() {
     }
 
     readSteams(p_map, countStems);
-    modifyWord(testedStr, 1, p_mapTestedStrig);
+    modifyWord((unsigned char *)testedStr, 1, p_mapTestedStrig);
     stemsFinding(p_map, p_mapTestedStrig);
     freeMap(p_map);
     freeMap(p_mapTestedStrig);
 }
-int makeStems(){
+
+int makeStems() {
     int status = 0;
     HashMap *p_map = createHashMap(MAP_SIZE);
     if (p_map == NULL) {
@@ -183,7 +185,9 @@ int makeStems(){
         return -1;
     }
     //dasenka_cili_zivot_stenete
-    status = readFromFile(p_map,"C:\\Users\\Jan\\CLionProjects\\StemmerSemestralniPrace\\dasenka_cili_zivot_stenete.txt", STEM_SIZE);
+    status = readFromFile(p_map,
+                          "C:\\Users\\Jan\\CLionProjects\\StemmerSemestralniPrace\\dasenka_cili_zivot_stenete.txt",
+                          STEM_SIZE);
     if (status != 0) {
         freeMap(p_map);
         return -1;
@@ -202,19 +206,35 @@ int makeStems(){
 
 
 int main(int argc, char *argv[]) {
-    if(argc == 2 || argc == 3) {
+    int msl, msf, len,argLen,i;
+    char number[100];
+    argLen =4;
+
+    if (argc == 2 || argc == 3) {
 
         FILE *f = fopen("C:\\Users\\Jan\\CLionProjects\\StemmerSemestralniPrace\\stems.dat", "r");
-        if (f != NULL) { // file exist
+        if (f != NULL) { // file exist, find stems in text
             printf("Find stems in text\n");
-            findStemsFromText();
-        }
-        else {
+            if (argc == 2) {
+                msl = STEM_COUNT;
+            } else {
+                len = strlen(argv[2]);
+                i = 0;
+                while(i < len){
+                    number[i] = argv[2][i+argLen-1];
+                    i++;
+                }
+                number[i] = '\0';
+                msl = atoi(number);
+            }
+
+            findStemsFromText(argv[1],msl);
+        } else {
             fclose(f);
             printf("Make new stems\n ");
-            makeStems();
+            //makeStems();
         }
-    } else{
+    } else {
         printf("Wrong number of parameters\n Program have to run with:\n programName fileWithLerning (sizeOfStem) or \n  programName testingString (sizeOfStem)");
     }
 
