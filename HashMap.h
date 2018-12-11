@@ -80,4 +80,7 @@ void saveToFile(HashMap *p_map);
 int findStems(HashMap *p_map, HashMap *p_stems, int sizeStem);
 
 int LCS(HashMap *p_stems, unsigned char *p_word1, unsigned char *p_word2, int sizeStem);
+
+Node * reverse(Node * node);
+
 #endif //STEMMERSEMESTRALNIPRACE_HASHMAP_H

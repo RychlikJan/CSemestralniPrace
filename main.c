@@ -1,20 +1,22 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <io.h>
 #include "HashMap.h"
 
 #define MAP_SIZE 1000
-#define STEM_SIZE 3
-#define STEM_COUNT 10
+#define STEM_LENGTH 3
+#define STEM_FREQ 10
+
+const char *FILE_NAME = "stems.dat";
+//const char *FILE_NAME = "C:\\Users\\Jan\\CLionProjects\\StemmerSemestralniPrace\\stems.dat";
 
 int readFromFile(HashMap *p_map, char *file, int stemSize);
 
 int modifyWord(unsigned char *p_word, int stemSize, HashMap *p_map);
 
-int findStemsFromText(char *testedStr,int msl);
+int findStemsFromText(char *testedStr, int msl);
 
-int makeStems();
+int makeStems(char *file, int msl);
 
 int readSteams(HashMap *p_map, int countStems);
 
@@ -72,6 +74,7 @@ int stemsFinding(HashMap *p_map, HashMap *p_mapTestedStrig) {
     unsigned char finalStem[100];
     finalStem[0] = '0';
     finalStem[1] = '\0';
+    p_mapTestedStrig->list[0] = reverse(p_mapTestedStrig->list[0]);
     p_aktWord = p_mapTestedStrig->list[0];
     while (p_aktWord != NULL) {
         size_t sizeFinalSteem = 0;
@@ -79,11 +82,13 @@ int stemsFinding(HashMap *p_map, HashMap *p_mapTestedStrig) {
         finalStem[1] = '\0';
         p_aktStem = p_map->list[0];
         while (p_aktStem != NULL) {
+            //printf("%s -> %s\n", p_aktWord->p_word,p_aktStem->p_word);
             if (strstr((char *) p_aktWord->p_word, (char *) p_aktStem->p_word) != NULL) {
                 if (p_aktStem->wordSize >= sizeFinalSteem) {
                     sizeFinalSteem = p_aktStem->wordSize;
                     memcpy(finalStem, p_aktStem->p_word, sizeFinalSteem);
-                    finalStem[sizeFinalSteem] = '\0';
+                    finalStem[sizeFinalSteem+1] = '\0';
+                   // printf("%s -> %s\n", p_aktWord->p_word, finalStem);
                 }
             }
             p_aktStem = p_aktStem->p_next;
@@ -128,7 +133,7 @@ int readSteams(HashMap *p_map, int countStems) {
     unsigned char newString[2][100];
     int i, j, k;
 
-    fp = fopen("C:\\Users\\Jan\\CLionProjects\\StemmerSemestralniPrace\\stems.dat", "r");
+    fp = fopen(FILE_NAME, "r");
     if (fp == NULL)
         exit(EXIT_FAILURE);
 
@@ -151,6 +156,7 @@ int readSteams(HashMap *p_map, int countStems) {
         }
         stemC = atoi(newString[1]);
         if (stemC >= countStems) {
+            //printf("pridano %s ",newString[0]);
             insert(p_map, newString[0]);
         }
     }
@@ -159,7 +165,7 @@ int readSteams(HashMap *p_map, int countStems) {
 
 }
 
-int findStemsFromText(char *testedStr,int msl) {
+int findStemsFromText(char *testedStr, int msl) {
     int countStems = msl;
     //unsigned char testedStr[100] = "Šel pes do lesa a potkal dlažební kostku sel pes do lesa a potkal dlazebni kostku";
 
@@ -171,13 +177,13 @@ int findStemsFromText(char *testedStr,int msl) {
     }
 
     readSteams(p_map, countStems);
-    modifyWord((unsigned char *)testedStr, 1, p_mapTestedStrig);
+    modifyWord((unsigned char *) testedStr, 1, p_mapTestedStrig);
     stemsFinding(p_map, p_mapTestedStrig);
     freeMap(p_map);
     freeMap(p_mapTestedStrig);
 }
 
-int makeStems() {
+int makeStems(char *file, int msl) {
     int status = 0;
     HashMap *p_map = createHashMap(MAP_SIZE);
     if (p_map == NULL) {
@@ -185,9 +191,7 @@ int makeStems() {
         return -1;
     }
     //dasenka_cili_zivot_stenete
-    status = readFromFile(p_map,
-                          "C:\\Users\\Jan\\CLionProjects\\StemmerSemestralniPrace\\dasenka_cili_zivot_stenete.txt",
-                          STEM_SIZE);
+    status = readFromFile(p_map, file, msl);
     if (status != 0) {
         freeMap(p_map);
         return -1;
@@ -198,7 +202,7 @@ int makeStems() {
         freeMap(p_map);
         return -1;
     }
-    findStems(p_map, p_stems, STEM_SIZE);
+    findStems(p_map, p_stems, msl);
     saveToFile(p_stems);
     freeMap(p_map);
     freeMap(p_stems);
@@ -206,37 +210,112 @@ int makeStems() {
 
 
 int main(int argc, char *argv[]) {
-    int msl, msf, len,argLen,i;
-    char number[100];
-    argLen =4;
+    int msl, msf, len, argLen, i;
+    char number[100], *argMsl, *argMsf, argRead[100];
+    char *p_end;
+    argMsf = "-msf=";
+    argMsl = "-msl=";
+    argLen = 6;
+    char *err = "Wrong program parameters.\nRun with: <wordSeuence|| fileWithStems> <-msf=stemsFrequency|| -msl=stemLength >\n";
+    char *s2 = ".txt";
+    char *result = malloc(strlen(argv[1]) + strlen(s2) + 1);
+    if (result == NULL) {
+        printf("Err with malloc");
+        return 1;
+    }
+    strcpy(result, argv[1]);
+    strcat(result, s2);
+    FILE *f = fopen(FILE_NAME, "r");
+    FILE *f1 = fopen(argv[1], "r");
+    FILE *f2 = fopen(result, "r");
+    if (argc == 2) {
+        msl = STEM_LENGTH;
+        msf = STEM_FREQ;
 
-    if (argc == 2 || argc == 3) {
+        if (f1 != NULL || f2 != NULL) {
+            if (f1 != NULL) {
 
-        FILE *f = fopen("C:\\Users\\Jan\\CLionProjects\\StemmerSemestralniPrace\\stems.dat", "r");
-        if (f != NULL) { // file exist, find stems in text
-            printf("Find stems in text\n");
-            if (argc == 2) {
-                msl = STEM_COUNT;
-            } else {
-                len = strlen(argv[2]);
-                i = 0;
-                while(i < len){
-                    number[i] = argv[2][i+argLen-1];
-                    i++;
-                }
-                number[i] = '\0';
-                msl = atoi(number);
+                //printf("makeStems(resoult =%s, msl = %d)",argv[1],msl);
+                makeStems(argv[1], msl);
+            }else{
+                //printf("makeStems(resoult =%s, msl = %d)",result,msl);
+                makeStems(result, msl);
             }
 
-            findStemsFromText(argv[1],msl);
         } else {
-            fclose(f);
-            printf("Make new stems\n ");
-            //makeStems();
+            if (f == NULL) {
+                printf("%s", err);
+                return 1;
+            }
+            //printf("findStemsFromText(argv[1] = %s,msf = %d)",argv[1],msf);
+            findStemsFromText(argv[1],msf);
         }
-    } else {
-        printf("Wrong number of parameters\n Program have to run with:\n programName fileWithLerning (sizeOfStem) or \n  programName testingString (sizeOfStem)");
+    } else if (argc == 3) {
+        len = strlen(argv[2]);
+        if(len <6){
+            printf("%s",err);
+            return 1;
+        }
+        i = 0;
+        while (i < len) {
+            argRead[i] = argv[2][i];
+            number[i] = argv[2][i + argLen - 1];
+            i++;
+        }
+        number[i] = '\0';
+        argRead[5] = '\0';
+        if (!(strncmp(argRead, argMsl, 5))) {
+            msl = strtol(number, &p_end, 10);
+            if (f1 != NULL || f2 != NULL) {
+                if (f1 != NULL || p_end != NULL) {
+                    //printf("makeStems(resoult =%s, msl = %d)", argv[1], msl);
+                    makeStems(argv[1], msl);
+                } else if (p_end != NULL) {
+                    //printf("makeStems(resoult =%s, msl = %d)", result, msl);
+                    makeStems(result, msl);
+                }
+                else{
+                    printf("%s\n", err);
+                    return 1;
+                }
+            }
+            else{
+                printf("%s\n", err);
+                return 1;
+            }
+            } else if (!(strncmp(argRead, argMsf, 5))) {
+                msf = strtol(number, &p_end, 10);
+                if(p_end != NULL && f != NULL) {
+                    //printf("findStemsFromText(argv[1] = %s,msf = %d)", argv[1], msf);
+                    findStemsFromText(argv[1],msf);
+                } else{
+                    printf("%s\n", err);
+                    return 1;
+                }
+            } else {
+                printf("%s\n", err);
+                return 1;
+            }
+
+        } else {
+            printf("%s", err);
+            return 1;
+        }
+if (f != NULL){
+fclose(f);
+}
+if (f1 != NULL){
+fclose(f1);
+}
+if (f2 != NULL){
+fclose(f2);
+}
+
+//fclose(f);
+//fclose(f1);
+//fclose(f2);
+free(result);
+//free(p_end);
+        return 0;
     }
 
-    return 0;
-}

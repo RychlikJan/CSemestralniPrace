@@ -2,9 +2,14 @@
 // Created by Jan on 24. 10. 2018.
 //
 #include <stdio.h>
-#include <windef.h>
+#include <string.h>
 #include <malloc.h>
+#include <stdlib.h>
 #include "HashMap.h"
+
+#ifndef min
+#define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
+#endif
 
 int insert(HashMap *p_map,unsigned char *p_word) {
     int key;
@@ -17,9 +22,11 @@ int insert(HashMap *p_map,unsigned char *p_word) {
     p_tmp = p_listOnPos;
 
     while(p_tmp != NULL){
-        if(!memcmp(p_word,p_tmp->p_word,(max(newWord,p_tmp->wordSize)-1))){
-            p_tmp->count++;
-            return 0;
+        if(newWord == p_tmp->wordSize) {
+            if (!memcmp(p_word, p_tmp->p_word, (min(newWord, p_tmp->wordSize) - 1))) {
+                p_tmp->count++;
+                return 0;
+            }
         }
         p_tmp=p_tmp->p_next;
     }
@@ -89,7 +96,7 @@ void showMap(HashMap *p_map) {
         p_tmp = p_map->list[i];
         while (p_tmp) {
             if(p_tmp->p_word != NULL) {
-                printf("           Slovo %s , pocet %d, size slova %d \n",p_tmp->p_word,p_tmp->count,p_tmp->wordSize);
+                printf("           Slovo %s , pocet %d, size slova %ld \n",p_tmp->p_word,p_tmp->count,p_tmp->wordSize);
             }
             p_tmp = p_tmp->p_next;
         }
@@ -158,10 +165,10 @@ void saveToFile(HashMap *p_map){
         printf("%s ,", list[i]->p_word);
     }*/
     qsort(list,(size_t)p_map->count, sizeof(Node*),&compareNodes);
-    FILE *f = fopen("C:\\Users\\Jan\\CLionProjects\\StemmerSemestralniPrace\\stems.dat", "w");
+    FILE *f = fopen("stems.dat", "w");
     if(f == NULL){
         printf("File writing filed\n");
-        exit(1);
+        return;
     }
     for(i=0;i<p_map->count;i++){
         fprintf(f,"%s %d\n", list[i]->p_word, list[i]->count);
@@ -238,7 +245,7 @@ int LCS(HashMap *p_stems, unsigned char *p_word1, unsigned char *p_word2, int si
          stem[len]='\0';
          insert(p_stems,stem);
          o=0;
-
+	free(stem);
          while(o < len){
              LCSuff[i-o][j-o] =0;
              o++;
@@ -247,4 +254,16 @@ int LCS(HashMap *p_stems, unsigned char *p_word1, unsigned char *p_word2, int si
     }
    }
     return 0;
+}
+
+Node * reverse(Node * node){
+    Node *tmp;
+    Node * previous = NULL;
+    while(node !=NULL){
+        tmp = node->p_next;
+        node->p_next = previous;
+        previous = node;
+        node = tmp;
+    }
+    return previous;
 }
